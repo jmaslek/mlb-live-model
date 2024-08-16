@@ -82,5 +82,8 @@ def get_game_result(gamePk: str | int) -> GameResult:
     away_score = away["teamStats"]["batting"]["runs"]
     home_win = home_score > away_score
     return GameResult(
-        game_pk=gamePk, home_score=home_score, away_score=away_score, home_win=home_win
+        game_pk=gamePk,
+        home_final_score=home_score,
+        away_final_score=away_score,
+        home_win=home_win,
     )

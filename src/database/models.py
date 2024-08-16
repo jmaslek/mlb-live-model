@@ -34,7 +34,7 @@ class GameResultDB(Base):
 
     id = Column(Integer, Sequence("my_sequence"), primary_key=True)
     game_pk = Column(Integer)
-    home_score = Column(Integer)
-    away_score = Column(Integer)
+    home_final_score = Column(Integer)
+    away_final_score = Column(Integer)
     home_win = Column(Boolean)
     timestamp = Column(DateTime, default=datetime.datetime.now)

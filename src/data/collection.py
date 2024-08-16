@@ -90,5 +90,4 @@ def main():
 
 
 if __name__ == "__main__":
-    get_game_results_into_db()
     main()
