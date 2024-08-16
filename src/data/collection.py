@@ -1,11 +1,13 @@
-from .utils import get_days_games, process_game
-from ..database.db import insert_to_db
+from .utils import get_days_games, process_game, get_game_result
+from ..database.db import insert_to_db, insert_game_result_to_db
 import datetime
 from apscheduler.schedulers.background import BlockingScheduler
 from loguru import logger
 import json
 import pytz
 from apscheduler.triggers.cron import CronTrigger
+from ..database.utils import get_games_to_update
+import time
 
 # Set up Pacific Time zone
 pacific_tz = pytz.timezone("US/Pacific")
@@ -53,6 +55,20 @@ def get_games_into_db():
         logger.info("No games to insert")
 
 
+def get_game_results_into_db():
+    game_pk_list = get_games_to_update()
+    logger.info(f"Getting game results for {len(game_pk_list)} games")
+    game_results = []
+    for game_pk in game_pk_list:
+        game_result = get_game_result(gamePk=game_pk)
+        if game_result:
+            game_results.append(game_result)
+    if game_results:
+        logger.info(f"Inserting {len(game_results)} game results into db")
+        insert_game_result_to_db(game_results)
+    time.sleep(60 * 60 * 5)
+
+
 def clear_cache():
     global _cache
     logger.info("Clearing cache")
@@ -64,6 +80,7 @@ def main():
     scheduler = BlockingScheduler(timezone=pacific_tz)
     scheduler.add_job(get_games_into_db, "interval", seconds=30)
     scheduler.add_job(clear_cache, CronTrigger(hour=2, minute=0))
+    scheduler.add_job(get_game_results_into_db, CronTrigger(hour=5, minute=0))
 
     try:
         scheduler.start()
@@ -73,4 +90,5 @@ def main():
 
 
 if __name__ == "__main__":
+    get_game_results_into_db()
     main()

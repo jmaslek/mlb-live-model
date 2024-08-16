@@ -1,6 +1,7 @@
 import httpx
 import datetime
 from ..models.game_snapshot import GameSnapshot
+from ..models.game_result import GameResult
 
 url = "https://statsapi.mlb.com/api/v1/schedule/games?sportId=1&hydrate=linescore&startDate={date}&endDate={date}"
 
@@ -69,3 +70,17 @@ def process_game(game: dict) -> GameSnapshot | None:
 
     except KeyError:
         return None
+
+
+def get_game_result(gamePk: str | int) -> GameResult:
+    endpoint = f"https://statsapi.mlb.com/api/v1/game/{gamePk}/boxscore"
+    data = httpx.get(endpoint).json()["teams"]
+    home = data["home"]
+    away = data["away"]
+
+    home_score = home["teamStats"]["batting"]["runs"]
+    away_score = away["teamStats"]["batting"]["runs"]
+    home_win = home_score > away_score
+    return GameResult(
+        game_pk=gamePk, home_score=home_score, away_score=away_score, home_win=home_win
+    )
